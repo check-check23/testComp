@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Викторина: Знакомство с компьютером</title>
+    <style>
+        :root {
+            --bg-color: #F4F9FF;
+            --card-bg: #FFFFFF;
+            --primary: #4A90E2;
+            --accent: #FF6B6B;
+            --secondary: #6BCB77;
+            --yellow: #FFD93D;
+            --text-color: #2C3E50;
+            --shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .quiz-container {
+            background-color: var(--card-bg);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 850px;
+            padding: 25px;
+            text-align: center;
+            border: 4px solid #E1EEFF;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--primary);
+            background: #EBF4FF;
+            padding: 12px 20px;
+            border-radius: 16px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #E1EEFF;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .image-container {
+            width: 100%;
+            height: 480px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            background-color: #FFFFFF;
+            border-radius: 18px;
+            overflow: hidden;
+            border: 2px solid #CBD5E1;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .image-container img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+
+        .question-text {
+            font-size: 1.35rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .image-container {
+                height: 300px;
+            }
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .btn-option {
+            background-color: #F0F7FF;
+            border: 3px solid #D0E3FF;
+            border-radius: 16px;
+            padding: 14px 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .btn-option:hover:not([disabled]) {
+            background-color: #E1EEFF;
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+
+        .btn-option.correct {
+            background-color: #D4EDDA !important;
+            border-color: var(--secondary) !important;
+            color: #155724 !important;
+        }
+
+        .btn-option.wrong {
+            background-color: #F8D7DA !important;
+            border-color: var(--accent) !important;
+            color: #721C24 !important;
+        }
+
+        .btn-next {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);
+            transition: all 0.2s ease;
+            display: none;
+            margin: 0 auto;
+        }
+
+        .btn-next:hover {
+            background-color: #357ABD;
+            transform: scale(1.05);
+        }
+
+        .results-card {
+            display: none;
+        }
+
+        .results-score {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 15px 0;
+        }
+
+        .results-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: var(--yellow);
+            color: #5A4A00;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        .btn-restart {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(107, 203, 119, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .btn-restart:hover {
+            background-color: #55B361;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div id="quiz-screen">
+        <div class="quiz-header">
+            <span id="question-count">Вопрос 1 из 14</span>
+            <span id="score-display">Баллы: 0 / 14</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+
+        <div class="image-container" id="image-container">
+            <img id="question-img" src="" alt="Иллюстрация к вопросу">
+        </div>
+
+        <div class="question-text" id="question-text">
+            Загрузка вопроса...
+        </div>
+
+        <div class="options-grid" id="options-grid"></div>
+
+        <button class="btn-next" id="btn-next" onclick="nextQuestion()">Следующий вопрос ➔</button>
+    </div>
+
+    <div id="results-screen" class="results-card">
+        <h2>🎉 Викторина окончена! 🎉</h2>
+        <p>Отличная работа! Вот твой результат:</p>
+        <div class="results-score" id="final-score">0 / 14</div>
+        <div class="results-badge" id="results-badge">Ученик</div>
+        <p id="results-message">Ты хорошо постарался!</p>
+        <button class="btn-restart" onclick="restartQuiz()">Пройти еще раз 🔄</button>
+    </div>
+</div>
+
+<script>
+    const photoUrls = {
+        pc: "https://images.unsplash.com/photo-1587831990711-23ca6441447b?w=1000&auto=format&fit=crop",
+        sysunit: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=1000&auto=format&fit=crop",
+        monitor: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=1000&auto=format&fit=crop",
+        keyboard: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=1000&auto=format&fit=crop",
+        mouse: "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=1000&auto=format&fit=crop",
+        headphones: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=1000&auto=format&fit=crop",
+        webcam: "https://m.media-amazon.com/images/I/71iNwni9TsL._AC_SL1500_.jpg",
+        mic: "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=1000&auto=format&fit=crop",
+        shutdown: "https://images.unsplash.com/photo-1629654297299-c8506221ca97?w=1000&auto=format&fit=crop",
+        volume: "https://images.unsplash.com/photo-1545454675-3531b543be5d?w=1000&auto=format&fit=crop"
+    };
+
+    const questions = [
+        {
+            image: photoUrls.pc,
+            question: "Может ли компьютер «думать» сам по себе без человека?",
+            options: [
+                "Да, он сам всё придумывает",
+                "Нет, он делает только то, что ему сказал человек",
+                "Думает только по ночам",
+                "Думает только в играх"
+            ],
+            correct: 1
+        },
+        {
+            image: photoUrls.sysunit,
+            question: "Посмотри на картинку. Как называется это устройство?",
+            options: [
+                "Монитор",
+                "Системный блок",
+                "Клавиатура",
+                "Колонка"
+            ],
+            correct: 1
+        },
+        {
+            image: photoUrls.sysunit,
+            question: "Зачем нужен системный блок и как его называют?",
+            options: [
+                "Это «глаза» компьютера, они показывают картинку",
+                "Это «мозг» компьютера, он управляет всей работой",
+                "Это устройство для печати букв",
+                "Это подставка для кружки"
+            ],
+            correct: 1
+        },
+        {
+            image: photoUrls.monitor,
+            question: "Посмотри на фото. Что это за устройство?",
+            options: [
+                "Монитор",
+                "Системный блок",
+                "Планшет",
+                "Микрофон"
+            ],
+            correct: 0
+        },
+        {
+            image: photoUrls.monitor,
+            question: "Для чего нужен монитор?",
+            options: [
+                "Чтобы слушать музыку",
+                "Чтобы показывать нам картинку и текст",
+                "Чтобы вводить буквы",
+                "Чтобы включать звук"
+            ],
+            correct: 1
+        },
+        {
+            image: photoUrls.keyboard,
+            question: "Узнаёшь это устройство на картинке?",
+            options: [
+                "Мышь",
+                "Монитор",
+                "Клавиатура",
+                "Сканер"
+            ],
+            correct: 2
+        },
+        {
+            image: photoUrls.keyboard,
+            question: "Для чего нужна клавиатура?",
+            options: [
+                "Для ввода букв, цифр и команд",
+                "Для прослушивания музыки",
+                "Для переключения каналов",
+                "Для управления курсором"
+            ],
+            correct: 0
+        },
+        {
+            image: photoUrls.mouse,
+            question: "Как называется это устройство управления?",
+            options: [
+                "Кошка",
+                "Колёсико",
+                "Мышь",
+                "Джойстик"
+            ],
+            correct: 2
+        },
+        {
+            image: photoUrls.mouse,
+            question: "Для чего нужна компьютерная мышь?",
+            options: [
+                "Чтобы говорить",
+                "Для управления курсором на экране",
+                "Чтобы печатать буквы",
+                "Чтобы выключать свет"
+            ],
+            correct: 1
+        },
+        {
+            image: photoUrls.headphones,
+            question: "Что изображено на картинке и для чего оно нужно?",
+            options: [
+                "Наушники — чтобы слышать звук и не мешать другим",
+                "Веб-камера — чтобы снимать видео",
+                "Микрофон — чтобы говорить",
+                "Динамики — чтобы было очень громко"
+            ],
+            correct: 0
+        },
+        {
+            image: photoUrls.webcam,
+            question: "Что за устройство изображено и для чего оно нужно?",
+            options: [
+                "Клавиатура — чтобы печатать текст",
+                "Веб-камера — чтобы показывать себя на видео",
+                "Колонка — чтобы регулировать громкость",
+                "Блок питания — чтобы заряжать компьютер"
+            ],
+            correct: 1
+        },
+        {
+            image: photoUrls.mic,
+            question: "Как называется это устройство и для чего оно нужно?",
+            options: [
+                "Веб-камера — чтобы смотреть мультики",
+                "Микрофон — чтобы говорить, и вас слышали",
+                "Колонка — чтобы слушать песни",
+                "Системный блок — чтобы думать"
+            ],
+            correct: 1
+        },
+        {
+            image: photoUrls.shutdown,
+            question: "Как правильно выключить компьютер?",
+            options: [
+                "Нажать «Пуск» → «Завершение работы»",
+                "Выдернуть шнур из розетки",
+                "Нажать кнопку на системном блоке во время работы",
+                "Закрыть монитор тряпкой"
+            ],
+            correct: 0
+        },
+        {
+            image: photoUrls.volume,
+            question: "Где на рабочей панели находится значок динамика для настройки громкости?",
+            options: [
+                "Вверху слева",
+                "Внизу справа на панели задач",
+                "Посередине экрана",
+                "Вверху справа"
+            ],
+            correct: 1
+        }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let answered = false;
+
+    function loadQuestion() {
+        answered = false;
+        const q = questions[currentQuestion];
+
+        document.getElementById('question-count').innerText = `Вопрос ${currentQuestion + 1} из 14`;
+        document.getElementById('score-display').innerText = `Баллы: ${score} / 14`;
+        document.getElementById('progress-fill').style.width = `${((currentQuestion) / 14) * 100}%`;
+
+        document.getElementById('question-img').src = q.image;
+        document.getElementById('question-text').innerText = q.question;
+
+        const optionsGrid = document.getElementById('options-grid');
+        optionsGrid.innerHTML = '';
+
+        q.options.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-option';
+            btn.innerText = opt;
+            btn.onclick = () => selectOption(idx);
+            optionsGrid.appendChild(btn);
+        });
+
+        document.getElementById('btn-next').style.display = 'none';
+    }
+
+    function selectOption(index) {
+        if (answered) return;
+        answered = true;
+
+        const q = questions[currentQuestion];
+        const buttons = document.querySelectorAll('.btn-option');
+
+        if (index === q.correct) {
+            buttons[index].classList.add('correct');
+            score += 1;
+            document.getElementById('score-display').innerText = `Баллы: ${score} / 14`;
+        } else {
+            buttons[index].classList.add('wrong');
+            buttons[q.correct].classList.add('correct');
+        }
+
+        buttons.forEach(btn => btn.disabled = true);
+
+        const nextBtn = document.getElementById('btn-next');
+        if (currentQuestion === questions.length - 1) {
+            nextBtn.innerText = 'Посмотреть результаты 🏆';
+        } else {
+            nextBtn.innerText = 'Следующий вопрос ➔';
+        }
+        nextBtn.style.display = 'block';
+    }
+
+    function nextQuestion() {
+        currentQuestion++;
+        if (currentQuestion < questions.length) {
+            loadQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        document.getElementById('quiz-screen').style.display = 'none';
+        document.getElementById('results-screen').style.display = 'block';
+
+        const finalScoreElem = document.getElementById('final-score');
+        const badgeElem = document.getElementById('results-badge');
+        const msgElem = document.getElementById('results-message');
+
+        finalScoreElem.innerText = `${score} / 14`;
+
+        if (score === 14) {
+            badgeElem.innerText = '🏆 Настоящий Эксперт!';
+            msgElem.innerText = 'Супер! Ты верно узнал абсолютно все устройства и их функции!';
+        } else if (score >= 10) {
+            badgeElem.innerText = '⭐ Уверенный Пользователь!';
+            msgElem.innerText = 'Отличный результат! Ты хорошо отличаешь устройства друг от друга!';
+        } else if (score >= 7) {
+            badgeElem.innerText = '👍 Хорошее начало!';
+            msgElem.innerText = 'Ты знаешь почти всё, но можно ещё немного повторить!';
+        } else {
+            badgeElem.innerText = '🌱 Начинающий исследователь';
+            msgElem.innerText = 'Попробуй пройти викторину ещё раз, чтобы лучше запомнить устройства!';
+        }
+    }
+
+    function restartQuiz() {
+        currentQuestion = 0;
+        score = 0;
+        document.getElementById('quiz-screen').style.display = 'block';
+        document.getElementById('results-screen').style.display = 'none';
+        loadQuestion();
+    }
+
+    loadQuestion();
+</script>
+
+</body>
+</html>
